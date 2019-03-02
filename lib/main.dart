@@ -8,7 +8,6 @@ void main() => runApp(MaterialApp(
     ));
 
 class MainApp extends StatelessWidget {
-
   var androidVersions = [
     "Android Cupcake",
     "Android Donut",
@@ -32,7 +31,12 @@ class MainApp extends StatelessWidget {
       appBar: AppBar(
         title: Text("Flutter ListView"),
       ),
-      body: ListView.builder(
+      body: ListView.separated(
+        separatorBuilder: (context, index) {
+          return Divider(
+            color: Colors.grey,
+          );
+        },
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.all(8.0),
