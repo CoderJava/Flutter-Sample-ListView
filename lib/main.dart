@@ -3,77 +3,176 @@ import 'package:flutter/material.dart';
 void main() => runApp(MaterialApp(
       theme: ThemeData(
         primaryColor: Colors.deepOrange,
+        primarySwatch: Colors.orange,
       ),
       home: MainApp(),
     ));
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
+  @override
+  _MainAppState createState() => _MainAppState();
+}
 
-  var androidVersions = [
-    AndroidVersion("Android Cupcake", 1),
-    AndroidVersion("Android Donut", 2),
-    AndroidVersion("Android Eclair", 1),
-    AndroidVersion("Android Froyo", 2),
-    AndroidVersion("Android Gingerbread", 1),
-    AndroidVersion("Android Honeycomb", 2),
-    AndroidVersion("Android Ice Cream Sandwich", 1),
-    AndroidVersion("Android Jelly Bean", 2),
-    AndroidVersion("Android Kitkat", 1),
-    AndroidVersion("Android Lollipop", 2),
-    AndroidVersion("Android Marshmallow", 1),
-    AndroidVersion("Android Nougat", 2),
-    AndroidVersion("Android Oreo", 1),
-    AndroidVersion("Android Pie", 2)
-  ];
+class _MainAppState extends State<MainApp> {
+  var chatMessages = List<ChatData>();
+  int _viewTypeMessage = -1;
+  var _messageTextEditingController = TextEditingController();
+  var _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text("Flutter ListView"),
+        title: Text(
+          "Simple Chatting",
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
       ),
-      body: ListView.builder(
-        itemBuilder: (context, index) {
-          var androidVersion = androidVersions[index];
-          switch (androidVersion._viewType) {
-            case 1:
-              return Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(androidVersion._name),
+      body: SafeArea(
+        child: Container(
+          color: Colors.grey[100],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  child: ListView.builder(
+                    itemBuilder: (context, index) {
+                      var chatMessage = chatMessages[index];
+                      switch (chatMessage._viewType) {
+                        case 1:
+                          return Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              Card(
+                                color: Colors.orange,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    chatMessage._message,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        default:
+                          return Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              Card(
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(chatMessage._message),
+                                ),
+                              ),
+                            ],
+                          );
+                      }
+                    },
+                    itemCount: chatMessages.length,
                   ),
-                ],
-              );
-            default:
-              return Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(androidVersion._name),
-                  ),
-                ],
-              );
-          }
-        },
-        itemCount: androidVersions.length,
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Row(
+                        children: <Widget>[
+                          Radio(
+                            value: 1,
+                            groupValue: _viewTypeMessage,
+                            onChanged: (value) {
+                              setState(() {
+                                _viewTypeMessage = value;
+                              });
+                            },
+                          ),
+                          Text("Left"),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: <Widget>[
+                          Radio(
+                            value: 2,
+                            groupValue: _viewTypeMessage,
+                            onChanged: (value) {
+                              setState(() {
+                                _viewTypeMessage = value;
+                              });
+                            },
+                          ),
+                          Text("Right"),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: TextField(
+                        controller: _messageTextEditingController,
+                        decoration: InputDecoration(
+                          hintText: "Type a message",
+                        ),
+                      ),
+                    ),
+                    FloatingActionButton(
+                      child: Icon(
+                        Icons.send,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        var message = _messageTextEditingController.text.trim();
+                        if (message.isEmpty) {
+                          _scaffoldKey.currentState.showSnackBar(
+                            SnackBar(
+                              content: Text("Message is empty"),
+                            ),
+                          );
+                        } else if (_viewTypeMessage == -1) {
+                          _scaffoldKey.currentState.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "Please choose view type message",
+                              ),
+                            ),
+                          );
+                        } else {
+                          setState(() {
+                            _messageTextEditingController.clear();
+                            chatMessages
+                                .add(ChatData(message, _viewTypeMessage));
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
-
 }
 
-class AndroidVersion {
-
-  String _name;
+class ChatData {
+  String _message;
   int _viewType;
 
-  AndroidVersion(this._name, this._viewType);
+  ChatData(this._message, this._viewType);
 
   int get viewType => _viewType;
 
@@ -81,10 +180,9 @@ class AndroidVersion {
     _viewType = value;
   }
 
-  String get name => _name;
+  String get message => _message;
 
-  set name(String value) {
-    _name = value;
+  set message(String value) {
+    _message = value;
   }
-
 }
